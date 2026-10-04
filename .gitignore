@@ -1,0 +1,38 @@
+# Python & Virtual Environments
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment & Secrets (NEVER COMMIT SENSITIVE KEYS)
+.env
+.env.local
+*.env
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Data directories (raw landed files & bad records)
+data/raw/*
+!data/raw/.gitkeep
+data/bad_records/*
+!data/bad_records/.gitkeep
+
+# dbt artifacts & Airflow logs
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+airflow/logs/
+logs/
+
+# Test / Coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/

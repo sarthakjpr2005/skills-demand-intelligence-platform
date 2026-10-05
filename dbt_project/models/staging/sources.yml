@@ -1,0 +1,57 @@
+version: 2
+
+sources:
+  - name: staging
+    database: skills_platform
+    schema: staging
+    description: "Raw job postings landed directly from the Adzuna API pipeline."
+
+    tables:
+      - name: raw_postings
+        description: "One row per unique (source_id, pull_batch_id) combination from the Adzuna extractor."
+        columns:
+          - name: id
+            description: "Surrogate PK (BIGSERIAL)."
+            data_tests:
+              - not_null
+              - unique
+
+          - name: source_id
+            description: "The external posting ID from Adzuna."
+            data_tests:
+              - not_null
+
+          - name: pull_batch_id
+            description: "UUID of the pipeline_run that loaded this record."
+            data_tests:
+              - not_null
+
+          - name: title
+            description: "Cleaned job title."
+            data_tests:
+              - not_null
+
+          - name: company
+            description: "Cleaned company name."
+
+          - name: country
+            description: "Country derived from Adzuna location area array."
+
+          - name: posted_date
+            description: "Standardized posting timestamp (TIMESTAMPTZ)."
+
+          - name: extracted_skills
+            description: "PostgreSQL TEXT[] of skills detected in title + description."
+
+      - name: pipeline_runs
+        description: "Audit log of every pipeline execution."
+        columns:
+          - name: run_id
+            description: "UUID primary key for each pipeline run."
+            data_tests:
+              - not_null
+              - unique
+          - name: status
+            description: "RUNNING | SUCCESS | FAILED"
+            data_tests:
+              - not_null

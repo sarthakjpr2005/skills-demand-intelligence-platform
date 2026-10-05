@@ -1,0 +1,118 @@
+version: 2
+
+models:
+  - name: stg_raw_postings
+    description: "Cleaned and cast raw postings from the staging source."
+    columns:
+      - name: posting_sk
+        description: "Surrogate PK inherited from staging.raw_postings."
+        data_tests:
+          - not_null
+          - unique
+      - name: source_id
+        description: "External Adzuna posting ID."
+        data_tests:
+          - not_null
+      - name: title
+        description: "Cleaned job title."
+        data_tests:
+          - not_null
+
+  - name: dim_date
+    description: "Calendar dimension — one row per distinct posting date."
+    columns:
+      - name: date_id
+        description: "Calendar date PK."
+        data_tests:
+          - not_null
+          - unique
+
+  - name: dim_company
+    description: "Company dimension — one row per distinct normalised company name."
+    columns:
+      - name: company_sk
+        description: "MD5 surrogate key."
+        data_tests:
+          - not_null
+          - unique
+      - name: company_name
+        description: "Normalised (lowercased) company name."
+        data_tests:
+          - not_null
+
+  - name: dim_location
+    description: "Location dimension — one row per distinct (city, state, country)."
+    columns:
+      - name: location_sk
+        description: "MD5 surrogate key."
+        data_tests:
+          - not_null
+          - unique
+
+  - name: dim_skill
+    description: "Skill dimension — one row per distinct extracted skill."
+    columns:
+      - name: skill_sk
+        description: "MD5 surrogate key."
+        data_tests:
+          - not_null
+          - unique
+      - name: skill_name
+        description: "Normalised skill name."
+        data_tests:
+          - not_null
+      - name: skill_category
+        description: "Taxonomy category for the skill."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - language
+                  - database
+                  - warehouse
+                  - orchestration
+                  - transformation
+                  - processing
+                  - streaming
+                  - cloud
+                  - platform
+                  - iac
+                  - tool
+                  - bi
+                  - other
+
+  - name: fct_postings
+    description: "One deduplicated row per job posting, with FK surrogate keys to all dimensions."
+    columns:
+      - name: posting_sk
+        description: "Surrogate PK."
+        data_tests:
+          - not_null
+          - unique
+      - name: source_id
+        description: "External Adzuna ID."
+        data_tests:
+          - not_null
+      - name: skill_count
+        description: "Number of skills extracted from this posting."
+        data_tests:
+          - not_null
+
+  - name: fct_posting_skills
+    description: "Bridge table — one row per (posting, skill) pair."
+    columns:
+      - name: posting_sk
+        description: "FK to fct_postings."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('fct_postings')
+              field: posting_sk
+      - name: skill_sk
+        description: "FK to dim_skill."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_skill')
+              field: skill_sk

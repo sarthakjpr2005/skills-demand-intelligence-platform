@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills Demand Intelligence Platform | Data Engineering Analytics</title>
+  <meta name="description" content="Production-grade skills demand intelligence dashboard with live PostgreSQL data warehouse, dbt star schema analytics, and pipeline observability.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+<!-- Particle canvas background -->
+<canvas id="particle-canvas"></canvas>
+
+<!-- Grid overlay -->
+<div class="grid-overlay"></div>
+
+<div class="app-shell">
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="2" y="2" width="11" height="11" rx="2" fill="url(#g1)"/>
+          <rect x="15" y="2" width="11" height="11" rx="2" fill="url(#g2)" opacity="0.7"/>
+          <rect x="2" y="15" width="11" height="11" rx="2" fill="url(#g2)" opacity="0.7"/>
+          <rect x="15" y="15" width="11" height="11" rx="2" fill="url(#g1)"/>
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#06b6d4"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#10b981"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-title">SDIP</span>
+        <span class="logo-sub">Intelligence Platform</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section-label">ANALYTICS</div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="overview" id="nav-overview">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </span>
+        <span class="nav-label">Overview</span>
+        <span class="nav-indicator"></span>
+      </button>
+      <button class="nav-item" data-tab="skills" id="nav-skills">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </span>
+        <span class="nav-label">Skills Explorer</span>
+        <span class="nav-badge" id="badge-skills">--</span>
+      </button>
+      <button class="nav-item" data-tab="stacks" id="nav-stacks">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </span>
+        <span class="nav-label">Tech Stacks</span>
+      </button>
+      <button class="nav-item" data-tab="companies" id="nav-companies">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="nav-label">Companies</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-section-label">OPERATIONS</div>
+    <nav class="sidebar-nav">
+      <button class="nav-item" data-tab="pipeline" id="nav-pipeline">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </span>
+        <span class="nav-label">Observability</span>
+        <span class="nav-status-dot" id="sidebar-health-dot"></span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sla-status-card" id="sla-card">
+        <div class="sla-dot pulsing" id="sla-dot"></div>
+        <div class="sla-info">
+          <span class="sla-title" id="sla-title">Warehouse Fresh</span>
+          <span class="sla-time" id="sla-time">Checking...</span>
+        </div>
+      </div>
+      <button class="btn-refresh-sidebar" id="btn-refresh-all" title="Refresh all data">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+  <main class="main-content">
+
+    <!-- ══ TOP BAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="page-breadcrumb">
+          <span class="breadcrumb-root">SDIP</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span class="breadcrumb-page" id="breadcrumb-page">Overview</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="data-freshness-badge" id="freshness-badge">
+          <span class="fresh-dot"></span>
+          <span id="freshness-text">Live Data</span>
+        </div>
+        <div class="topbar-divider"></div>
+        <span class="topbar-stack-label">PostgreSQL · dbt · Airflow</span>
+      </div>
+    </header>
+
+    <!-- ══ SCROLL AREA ══ -->
+    <div class="scroll-area">
+
+      <!-- ════════════════════════════════════════════
+           TAB 1: EXECUTIVE OVERVIEW
+      ════════════════════════════════════════════ -->
+      <section class="tab-pane active" id="tab-overview">
+
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+          <div class="hero-content">
+            <div class="hero-tag">
+              <span class="tag-dot"></span>
+              LIVE MARKET INTELLIGENCE
+            </div>
+            <h1 class="hero-title">Skills Demand<br><span class="gradient-text">Intelligence Platform</span></h1>
+            <p class="hero-desc">Production-grade ELT pipeline · dbt Star Schema · 11-assertion observability · Real-time job market analytics</p>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-ring ring-1"></div>
+            <div class="hero-ring ring-2"></div>
+            <div class="hero-ring ring-3"></div>
+            <div class="hero-core">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <path d="M20 4L36 13V27L20 36L4 27V13L20 4Z" stroke="url(#hg)" stroke-width="1.5" fill="none"/>
+                <circle cx="20" cy="20" r="6" fill="url(#hg)" opacity="0.8"/>
+                <defs>
+                  <linearGradient id="hg" x1="0" y1="0" x2="40" y2="40">
+                    <stop offset="0%" stop-color="#6366f1"/>
+                    <stop offset="100%" stop-color="#06b6d4"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Strip -->
+        <div class="kpi-strip">
+          <div class="kpi-card" id="kpi-postings">
+            <div class="kpi-glow indigo-glow"></div>
+            <div class="kpi-icon-wrap indigo">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-num" id="val-total-postings">--</span>
+              <span class="kpi-label">Live Postings</span>
+              <span class="kpi-delta positive">100% Verified</span>
+            </div>
+          </div>
+
+          <div class="kpi-divider"></div>
+
+          <div class="kpi-card" id="kpi-skills">
+            <div class="kpi-glow cyan-glow"></div>
+            <div class="kpi-icon-wrap cyan">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-num" id="val-tracked-skills">--</span>
+              <span class="kpi-label">Tracked Skills</span>
+              <span class="kpi-delta neutral" id="val-skill-mentions">-- mentions</span>
+            </div>
+          </div>
+
+          <div class="kpi-divider"></div>
+
+          <div class="kpi-card" id="kpi-companies">
+            <div class="kpi-glow emerald-glow"></div>
+            <div class="kpi-icon-wrap emerald">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-num" id="val-total-companies">--</span>
+              <span class="kpi-label">Hiring Companies</span>
+              <span class="kpi-delta positive">Active Hubs</span>
+            </div>
+          </div>
+
+          <div class="kpi-divider"></div>
+
+          <div class="kpi-card" id="kpi-salary">
+            <div class="kpi-glow amber-glow"></div>
+            <div class="kpi-icon-wrap amber">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-num" id="val-avg-salary">--</span>
+              <span class="kpi-label">Avg Market Salary</span>
+              <span class="kpi-delta positive">Annual GBP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <div class="glass-card chart-card wide">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Most Demanded Engineering Skills</h2>
+                <p class="card-subtitle">Market penetration across active job postings · fct_posting_skills bridge</p>
+              </div>
+              <div class="card-badge">Live dbt Mart</div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="chart-top-skills"></canvas>
+            </div>
+          </div>
+
+          <div class="glass-card chart-card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Tech Category Distribution</h2>
+                <p class="card-subtitle">Demand share across 9 taxonomy sectors</p>
+              </div>
+              <div class="card-badge">9 Domains</div>
+            </div>
+            <div class="chart-wrap donut-wrap">
+              <canvas id="chart-categories"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Insight Cards -->
+        <div class="insights-row">
+          <div class="insight-card">
+            <div class="insight-accent indigo"></div>
+            <div class="insight-icon indigo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            </div>
+            <div class="insight-body">
+              <span class="insight-heading">Dominant Cloud Stack</span>
+              <span class="insight-value">Azure &amp; AWS · 92% of cloud roles</span>
+              <p class="insight-text">Azure leads total mentions, closely followed by AWS. Strong synergy with Databricks in enterprise pipelines.</p>
+            </div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-accent purple"></div>
+            <div class="insight-icon purple">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <div class="insight-body">
+              <span class="insight-heading">Warehouse Standard</span>
+              <span class="insight-value">Snowflake · Highest Mention Count</span>
+              <p class="insight-text">Snowflake commands the largest share of modern cloud warehouse specifications across all postings.</p>
+            </div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-accent emerald"></div>
+            <div class="insight-icon emerald">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <div class="insight-body">
+              <span class="insight-heading">Highest Premium Stack</span>
+              <span class="insight-value">dbt &amp; BigQuery · £85k+ Midpoint</span>
+              <p class="insight-text">Modern analytics engineering stacks command top-tier compensation. Kubernetes and Spark close behind.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           TAB 2: SKILLS EXPLORER
+      ════════════════════════════════════════════ -->
+      <section class="tab-pane" id="tab-skills">
+        <div class="section-hero">
+          <h2 class="section-title">Skills <span class="gradient-text">Explorer</span></h2>
+          <p class="section-subtitle">Filter, search, and rank every tracked technology by market demand and salary signal</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar-glass">
+          <div class="search-field">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="skill-search-input" placeholder="Search skills — Python, Snowflake, dbt...">
+          </div>
+          <div class="chip-group" id="category-filter-chips">
+            <button class="chip active" data-category="all">All</button>
+            <button class="chip" data-category="cloud">Cloud</button>
+            <button class="chip" data-category="warehouse">Warehouse</button>
+            <button class="chip" data-category="language">Languages</button>
+            <button class="chip" data-category="platform">Platforms</button>
+            <button class="chip" data-category="orchestration">Orchestration</button>
+            <button class="chip" data-category="transformation">Transform</button>
+            <button class="chip" data-category="bi">BI &amp; Viz</button>
+            <button class="chip" data-category="iac">IaC</button>
+          </div>
+          <div class="sort-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <select id="sort-select">
+              <option value="demand">By Demand</option>
+              <option value="salary">By Salary</option>
+              <option value="name">A → Z</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="skills-grid" id="skills-grid-container"></div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           TAB 3: TECH STACKS
+      ════════════════════════════════════════════ -->
+      <section class="tab-pane" id="tab-stacks">
+        <div class="section-hero">
+          <h2 class="section-title">Tech Stack <span class="gradient-text">Co-occurrence</span></h2>
+          <p class="section-subtitle">Which tools are most frequently required together in the same role? Computed via bridge fact self-join.</p>
+        </div>
+        <div class="glass-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Technology Pair Analysis</h2>
+              <p class="card-subtitle">Top 15 skill combinations by co-mention count · fct_posting_skills self-join</p>
+            </div>
+            <div class="card-badge">Bridge Fact</div>
+          </div>
+          <div class="stack-pairs-container" id="stack-pairs-container"></div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           TAB 4: COMPANIES & SALARY
+      ════════════════════════════════════════════ -->
+      <section class="tab-pane" id="tab-companies">
+        <div class="section-hero">
+          <h2 class="section-title">Companies <span class="gradient-text">&amp; Compensation</span></h2>
+          <p class="section-subtitle">Top hiring organisations, geographic hubs, and highest-paying technology skill premiums</p>
+        </div>
+        <div class="two-col">
+          <!-- Left -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Top Hiring Companies</h2>
+                <p class="card-subtitle">Organisations with highest active posting volume</p>
+              </div>
+            </div>
+            <div id="companies-list-container"></div>
+          </div>
+          <!-- Right -->
+          <div class="flex-col-gap">
+            <div class="glass-card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">Geographic Demand Hubs</h2>
+                  <p class="card-subtitle">Regional concentration of vacancies</p>
+                </div>
+              </div>
+              <div id="locations-list-container"></div>
+            </div>
+            <div class="glass-card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">Highest-Paying Skills</h2>
+                  <p class="card-subtitle">Based on disclosed compensation ranges</p>
+                </div>
+              </div>
+              <div id="salary-spectrum-container"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           TAB 5: OBSERVABILITY HUB
+      ════════════════════════════════════════════ -->
+      <section class="tab-pane" id="tab-pipeline">
+        <div class="section-hero">
+          <h2 class="section-title">Observability <span class="gradient-text">Hub</span></h2>
+          <p class="section-subtitle">Automated data quality engine · 11 automated assertions · Freshness SLAs · Volume anomalies · Referential integrity</p>
+        </div>
+
+        <!-- Hero Status Banner -->
+        <div class="obs-hero-card" id="obs-hero-card">
+          <div class="obs-hero-left">
+            <div class="obs-big-status" id="obs-big-status">
+              <div class="obs-status-ring" id="obs-status-ring">
+                <svg viewBox="0 0 60 60" class="ring-svg">
+                  <circle cx="30" cy="30" r="26" stroke="rgba(99,102,241,0.2)" stroke-width="3" fill="none"/>
+                  <circle cx="30" cy="30" r="26" stroke="url(#rg)" stroke-width="3" fill="none" stroke-dasharray="163" stroke-dashoffset="0" id="ring-progress"/>
+                  <defs>
+                    <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#6366f1"/>
+                      <stop offset="100%" stop-color="#10b981"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span class="ring-count" id="ring-count">--</span>
+              </div>
+              <div class="obs-status-text">
+                <h3 id="obs-status-label">Checking...</h3>
+                <p id="obs-status-desc">Evaluating all 11 quality assertions</p>
+              </div>
+            </div>
+          </div>
+          <div class="obs-hero-right">
+            <div class="obs-mini-stats" id="obs-mini-stats"></div>
+            <button class="btn-run-audit" id="btn-trigger-audit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Run Quality Audit
+            </button>
+          </div>
+        </div>
+
+        <!-- Warehouse Counts -->
+        <div class="warehouse-grid" id="warehouse-stats-container"></div>
+
+        <!-- Quality Checks Table -->
+        <div class="glass-card" style="margin-top:1.5rem">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">11 Automated Quality &amp; SLA Assertions</h2>
+              <p class="card-subtitle">Evaluated on every batch execution · Results persisted to monitoring schema</p>
+            </div>
+            <span class="card-timestamp" id="checks-timestamp">Last verified: --</span>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="table-quality-checks">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Category</th>
+                  <th>Assertion</th>
+                  <th>Target Table</th>
+                  <th>Observed</th>
+                  <th>Threshold</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-quality-checks"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pipeline Runs -->
+        <div class="glass-card" style="margin-top:1.5rem">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Pipeline Execution Audit History</h2>
+              <p class="card-subtitle">staging.pipeline_runs · Complete lineage per batch UUID</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="table-pipeline-runs">
+              <thead>
+                <tr>
+                  <th>Batch UUID</th>
+                  <th>Started</th>
+                  <th>Duration</th>
+                  <th>Fetched</th>
+                  <th>Passed</th>
+                  <th>Quarantined</th>
+                  <th>Loaded</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-pipeline-runs"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /scroll-area -->
+  </main>
+</div>
+
+<!-- Toast container -->
+<div class="toast-stack" id="toast-container"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

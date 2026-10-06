@@ -12,7 +12,7 @@ from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.utils.db_connector import get_psycopg2_connection
@@ -39,13 +39,36 @@ app.add_middleware(
 )
 
 BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parent
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
+ASSETS_DIR = REPO_ROOT / "assets"
+FONTS_DIR = REPO_ROOT / "fonts"
 
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+if ASSETS_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
+if FONTS_DIR.exists():
+    app.mount("/fonts", StaticFiles(directory=str(FONTS_DIR)), name="fonts")
+
+
+@app.get("/styles.css")
+def serve_styles():
+    css_file = REPO_ROOT / "styles.css"
+    if css_file.exists():
+        return FileResponse(css_file, media_type="text/css")
+    raise HTTPException(status_code=404, detail="styles.css not found")
+
+
+@app.get("/main.js")
+def serve_main_js():
+    js_file = REPO_ROOT / "main.js"
+    if js_file.exists():
+        return FileResponse(js_file, media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="main.js not found")
 
 
 def run_query(sql: str, params: Optional[tuple] = None) -> List[Dict[str, Any]]:
@@ -292,13 +315,27 @@ def trigger_audit_endpoint(background_tasks: BackgroundTasks):
     }
 
 
-# ── Frontend Route ─────────────────────────────────────────────────────────────
+# ── Frontend Routes ────────────────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
 def serve_index():
-    """Serves the single-page application dashboard."""
+    """Serves the single-viewport full-bleed video landing page."""
+    root_index = REPO_ROOT / "index.html"
+    if root_index.exists():
+        with open(root_index, "r", encoding="utf-8") as f:
+            return f.read()
     index_file = TEMPLATES_DIR / "index.html"
     if not index_file.exists():
         raise HTTPException(status_code=404, detail="Frontend template not found")
+    with open(index_file, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def serve_dashboard():
+    """Serves the analytics & observability platform dashboard."""
+    index_file = TEMPLATES_DIR / "index.html"
+    if not index_file.exists():
+        raise HTTPException(status_code=404, detail="Dashboard template not found")
     with open(index_file, "r", encoding="utf-8") as f:
         return f.read()

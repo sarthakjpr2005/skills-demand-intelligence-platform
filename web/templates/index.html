@@ -31,7 +31,7 @@
 
   <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
+    <a href="/" class="sidebar-logo" style="text-decoration: none; cursor: pointer;" title="Back to Landing Page">
       <div class="logo-mark">
         <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
           <rect x="2" y="2" width="11" height="11" rx="3" fill="url(#brandG1)"/>
@@ -54,7 +54,7 @@
         <span class="logo-title">SDIP</span>
         <span class="logo-sub">Intelligence Platform</span>
       </div>
-    </div>
+    </a>
 
     <div class="sidebar-section-label">ANALYTICS</div>
     <nav class="sidebar-nav">
@@ -118,6 +118,9 @@
         </div>
       </div>
       <div class="topbar-right">
+        <a href="/" class="btn-home-return" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #ffffff; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">
+          <i data-lucide="arrow-left" style="width: 13px; height: 13px;"></i> Home Landing
+        </a>
         <div class="data-freshness-badge" id="freshness-badge">
           <span class="fresh-dot"></span>
           <span id="freshness-text">Live PostgreSQL Data</span>

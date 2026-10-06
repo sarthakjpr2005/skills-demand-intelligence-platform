@@ -210,8 +210,22 @@ function setTab(tab) {
 
 // Attach Nav Listeners
 document.querySelectorAll('.nav-item').forEach(btn => {
-  btn.addEventListener('click', () => setTab(btn.dataset.tab));
+  btn.addEventListener('click', () => {
+    setTab(btn.dataset.tab);
+    window.location.hash = btn.dataset.tab;
+  });
 });
+
+// Deep-link URL hash support (e.g. /dashboard#skills)
+window.addEventListener('hashchange', () => {
+  const h = window.location.hash.replace('#', '');
+  if (h && PAGES[h]) setTab(h);
+});
+
+const initialHash = window.location.hash.replace('#', '');
+if (initialHash && PAGES[initialHash]) {
+  setTimeout(() => setTab(initialHash), 50);
+}
 
 // Quick action buttons in hero
 $('hero-btn-explore')?.addEventListener('click', () => setTab('skills'));
